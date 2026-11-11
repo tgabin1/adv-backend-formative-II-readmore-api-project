@@ -1,0 +1,76 @@
+{
+  "info": {
+    "_postman_id": "89a1a3e1-20f4-4c72-9a50-31d0f7d7a101",
+    "name": "ReadMore Bookstore API",
+    "description": "Assignment walkthrough requests for the ReadMore Express and MongoDB API. Uses the local server and contains no database credentials. Send requests in this order: health check; create author; optionally show empty-author statistics; create book; demonstrate book and author routes and business rules; try deleting the author; delete the book; then delete the author. Create Author and Create Book save their IDs automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "authorId", "value": "" },
+    { "key": "bookId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/" }
+    },
+    {
+      "name": "Authors",
+      "item": [
+        {
+          "name": "Create author (run first)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('authorId', pm.response.json()._id); }"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"name\": \"Postman Demo Author\",\n  \"country\": \"Rwanda\",\n  \"bio\": \"Created for the API walkthrough\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/authors" }
+        },
+        { "name": "List authors", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors" } },
+        { "name": "Get author by ID", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}" } },
+        {
+          "name": "Update author",
+          "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"bio\": \"Updated in the Postman walkthrough\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/authors/{{authorId}}" }
+        },
+        { "name": "List this author's books", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}/books" } },
+        { "name": "Empty-author statistics (before Create book)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}/stats" } },
+        { "name": "Get author statistics", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}/stats" } },
+        { "name": "Try deleting author with books (expect 409)", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}" } },
+        { "name": "Delete author after deleting demo book", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/authors/{{authorId}}" } },
+        { "name": "Missing author (expect 404)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/authors/ffffffffffffffffffffffff" } }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Create book (after Create author)",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["if (pm.response.code === 201) { pm.collectionVariables.set('bookId', pm.response.json()._id); }"] } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Postman Demo Book\",\n  \"genre\": \"Mystery\",\n  \"price\": 19.99,\n  \"publishedYear\": 2022,\n  \"author\": \"{{authorId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books" }
+        },
+        { "name": "List books (page and limit)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/books?page=1&limit=5" } },
+        { "name": "Filter, search, sort books", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/books?genre=Mystery&minPrice=10&maxPrice=30&search=Postman&sort=price&order=asc" } },
+        { "name": "Get book by ID (author is populated)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/books/{{bookId}}" } },
+        {
+          "name": "Update book",
+          "request": { "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"price\": 21.5\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books/{{bookId}}" }
+        },
+        {
+          "name": "Invalid price (expect 422)",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Invalid Price Demo\",\n  \"genre\": \"Mystery\",\n  \"price\": 0,\n  \"publishedYear\": 2022,\n  \"author\": \"{{authorId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books" }
+        },
+        {
+          "name": "Invalid year (expect 422)",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Invalid Year Demo\",\n  \"genre\": \"Mystery\",\n  \"price\": 10,\n  \"publishedYear\": 1400,\n  \"author\": \"{{authorId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books" }
+        },
+        {
+          "name": "Duplicate title for same author (expect 409)",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"postman demo book\",\n  \"genre\": \"Mystery\",\n  \"price\": 19.99,\n  \"publishedYear\": 2022,\n  \"author\": \"{{authorId}}\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books" }
+        },
+        {
+          "name": "Nonexistent author ID (expect 400)",
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"title\": \"Orphan Book Demo\",\n  \"genre\": \"Mystery\",\n  \"price\": 10,\n  \"publishedYear\": 2022,\n  \"author\": \"ffffffffffffffffffffffff\"\n}", "options": { "raw": { "language": "json" } } }, "url": "{{baseUrl}}/books" }
+        },
+        { "name": "Missing book (expect 404)", "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/books/eeeeeeeeeeeeeeeeeeeeeeee" } },
+        { "name": "Delete demo book", "request": { "method": "DELETE", "header": [], "url": "{{baseUrl}}/books/{{bookId}}" } }
+      ]
+    }
+  ]
+}
