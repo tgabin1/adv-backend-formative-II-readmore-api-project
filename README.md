@@ -197,4 +197,10 @@ Submit a **a Github repository link** containing your project code. The reposito
 > I will be grading how you *think*, so narrate your decisions — don't just click through.
 
 Good luck — build it one endpoint at a time, and test each in your API client before moving on.
+
+## Video walkthrough
+
+The implementation walkthrough for this project is available here:
+
+[Watch the ReadMore API walkthrough](https://youtu.be/aCBjuYRLvFM?si=z-fTNqu5vr9ltsjw)
 ---
